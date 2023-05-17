@@ -1,15 +1,25 @@
 import tkinter
 
-root = tkinter.Tk()
-root.title("Chess")
-root.geometry("800x800")
+class StartScreen:
 
-title_label = tkinter.Label(root, text = "Chess", font = ('Cantarell', 18))
-play_btn = tkinter.Button(root, text = "Play", font = ('Cantarell', 18))
-exit_btn = tkinter.Button(root, text = "Exit", font = ('Cantarell', 18))
+    def __init__(self):
 
-title_label.grid(row = 0, column = 0, sticky = tkinter.W + tkinter.E)
-play_btn.grid(row = 1, column = 0, sticky = tkinter.W + tkinter.E)
-exit_btn.grid(row = 2, column = 0, sticky = tkinter.W + tkinter.E)
+        self.root = tkinter.Tk()
+        self.root.title("Chess")
+        self.root.geometry("300x300")
 
-root.mainloop()
+        self.title_label = tkinter.Label(self.root, text = "Chess", font = ('Cantarell', 24))
+        self.play_btn = tkinter.Button(self.root, text = "Play", font = ('Cantarell', 18))
+        self.quit_btn = tkinter.Button(self.root, text = "Exit", font = ('Cantarell', 18), command = self.quit)
+
+        self.title_label.pack(pady = 10)
+        self.play_btn.pack(fill = 'x')
+        self.quit_btn.pack(fill = 'x')
+
+        self.root.mainloop()
+
+    def quit(self):
+        exit(0)
+
+
+StartScreen()
