@@ -1,5 +1,5 @@
 import tkinter
-import logic.chess
+from logic.chess import Game
 
 class StartScreen:
 
@@ -19,8 +19,7 @@ class StartScreen:
         self.root.mainloop()
 
     def play(self):
-        self.game_window = tkinter.Tk()
-        self.game_window.mainloop()
+        Game()
 
     def quit(self):
         self.root.destroy()
