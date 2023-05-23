@@ -142,7 +142,7 @@ class Game:
                     self.gameboard_buttons[i][j].config(image = self.bp_image)
 
                 if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1):
-                    self.gameboard_buttons[i][j].config(bg = dark_color)
-                else:
                     self.gameboard_buttons[i][j].config(bg = light_color)
+                else:
+                    self.gameboard_buttons[i][j].config(bg = dark_color)
                         
