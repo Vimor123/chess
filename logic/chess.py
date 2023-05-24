@@ -64,7 +64,7 @@ class Game:
 
         if self.phase == "pick_piece":
             if self.gameboard[coords[0]][coords[1]].startswith(self.turn):
-                self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_color)
+                self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_color, activebackground = highlight_color)
         
 
     def init_images(self):
