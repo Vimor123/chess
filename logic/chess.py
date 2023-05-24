@@ -3,6 +3,7 @@ from PIL import ImageTk, Image
 
 dark_color = "#C28F58"
 light_color = "#F3D1AC"
+highlight_color = "#5DD3B8"
 tile_size = 50
 
 class Game:
@@ -42,64 +43,77 @@ class Game:
             for j in range(8):
                 self.gameboard_buttons[i].append(tkinter.Button(self.root, bd = 0,
                                                                 highlightthickness = 0))
-                self.gameboard_buttons[i][j].bind('<Button>', self.print_position)
+                self.gameboard_buttons[i][j].bind('<Button>', self.click_tile)
                 self.gameboard_buttons[i][j].grid(row = i, column = j)
 
-        self.render_board("w")
+        self.turn = "w"
+        self.phase = "pick_piece"
+
+        self.render_board(self.turn)
 
         self.root.mainloop()
+        
 
-    def print_position(self, event):
+    def click_tile(self, event):
         info = event.widget.grid_info()
-        print(info["row"], info["column"])
+        coords = [0, 0]
+        if self.turn == "w":
+            coords = [7 - info["row"], info["column"]]
+        else:
+            coords = [info["row"], 7 - info["column"]]
+
+        if self.phase == "pick_piece":
+            if self.gameboard[coords[0]][coords[1]].startswith(self.turn):
+                self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_color)
+        
 
     def init_images(self):
         wk_image = Image.open("./images/pieces/wk.png")
-        wk_image = wk_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        wk_image = wk_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.wk_image = ImageTk.PhotoImage(wk_image, master = self.root)
 
         wq_image = Image.open("./images/pieces/wq.png")
-        wq_image = wq_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        wq_image = wq_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.wq_image = ImageTk.PhotoImage(wq_image, master = self.root)
 
         wb_image = Image.open("./images/pieces/wb.png")
-        wb_image = wb_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        wb_image = wb_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.wb_image = ImageTk.PhotoImage(wb_image, master = self.root)
 
         wn_image = Image.open("./images/pieces/wn.png")
-        wn_image = wn_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        wn_image = wn_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.wn_image = ImageTk.PhotoImage(wn_image, master = self.root)
 
         wr_image = Image.open("./images/pieces/wr.png")
-        wr_image = wr_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        wr_image = wr_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.wr_image = ImageTk.PhotoImage(wr_image, master = self.root)
 
         wp_image = Image.open("./images/pieces/wp.png")
-        wp_image = wp_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        wp_image = wp_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.wp_image = ImageTk.PhotoImage(wp_image, master = self.root)
 
         bk_image = Image.open("./images/pieces/bk.png")
-        bk_image = bk_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        bk_image = bk_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.bk_image = ImageTk.PhotoImage(bk_image, master = self.root)
 
         bq_image = Image.open("./images/pieces/bq.png")
-        bq_image = bq_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        bq_image = bq_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.bq_image = ImageTk.PhotoImage(bq_image, master = self.root)
 
         bb_image = Image.open("./images/pieces/bb.png")
-        bb_image = bb_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        bb_image = bb_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.bb_image = ImageTk.PhotoImage(bb_image, master = self.root)
 
         bn_image = Image.open("./images/pieces/bn.png")
-        bn_image = bn_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        bn_image = bn_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.bn_image = ImageTk.PhotoImage(bn_image, master = self.root)
 
         br_image = Image.open("./images/pieces/br.png")
-        br_image = br_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        br_image = br_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.br_image = ImageTk.PhotoImage(br_image, master = self.root)
 
         bp_image = Image.open("./images/pieces/bp.png")
-        bp_image = bp_image.resize((tile_size, tile_size), Image.ANTIALIAS)
+        bp_image = bp_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
         self.bp_image = ImageTk.PhotoImage(bp_image, master = self.root)
 
         self.empty_image = tkinter.PhotoImage(width = tile_size, height = tile_size, master = self.root)
@@ -142,7 +156,7 @@ class Game:
                     self.gameboard_buttons[i][j].config(image = self.bp_image)
 
                 if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1):
-                    self.gameboard_buttons[i][j].config(bg = light_color)
+                    self.gameboard_buttons[i][j].config(bg = light_color, activebackground = light_color)
                 else:
-                    self.gameboard_buttons[i][j].config(bg = dark_color)
+                    self.gameboard_buttons[i][j].config(bg = dark_color, activebackground = dark_color)
                         
