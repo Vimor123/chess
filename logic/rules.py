@@ -46,3 +46,19 @@ def check_for_win(gameboard, turn):
 
 def check_for_draw(gameboard, turn):
     pass
+
+def get_piece_moves(gameboard, piece_position):
+    pass
+
+def check_for_loss(gameboard, turn):
+    king_position = (-1, -1)
+    opponents_pieces = []
+    for i in range(8):
+        for j in range(8):
+            if gameboard[i][j] == turn + "k":
+                king_position = (i, j)
+            elif not gameboard[i][j].startswith(turn) and gameboard[i][j] != "":
+                opponents_pieces.append({ "piece" : gameboard[i][j],
+                                          "position" : (i, j) })
+
+    return opponents_pieces

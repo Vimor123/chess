@@ -1,5 +1,7 @@
 import tkinter
+import time
 from PIL import ImageTk, Image
+import logic.rules
 
 dark_color = "#C28F58"
 light_color = "#F3D1AC"
@@ -56,15 +58,18 @@ class Game:
 
     def click_tile(self, event):
         info = event.widget.grid_info()
-        coords = [0, 0]
+        coords = (-1, -1)
         if self.turn == "w":
-            coords = [7 - info["row"], info["column"]]
+            coords = (7 - info["row"], info["column"])
         else:
-            coords = [info["row"], 7 - info["column"]]
+            coords = (info["row"], 7 - info["column"])
 
         if self.phase == "pick_piece":
             if self.gameboard[coords[0]][coords[1]].startswith(self.turn):
                 self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_color, activebackground = highlight_color)
+
+        print(logic.rules.check_for_loss(self.gameboard, self.turn))
+        print(coords)
         
 
     def init_images(self):
