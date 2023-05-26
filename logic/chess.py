@@ -5,7 +5,8 @@ import logic.rules
 
 dark_color = "#C28F58"
 light_color = "#F3D1AC"
-highlight_color = "#5DD3B8"
+highlight_dark_color = "#5DD3B8"
+highlight_light_color = "#9BF7E2"
 tile_size = 50
 
 class Game:
@@ -50,6 +51,11 @@ class Game:
 
         self.turn = "w"
         self.phase = "pick_piece"
+        self.chosen_piece_position = (-1, -1)
+        self.possible_moves = []
+
+        # Used only for en passant
+        self.last_move_positions = ((-1, -1), (-1, -1))
 
         self.render_board(self.turn)
 
@@ -66,10 +72,52 @@ class Game:
 
         if self.phase == "pick_piece":
             if self.gameboard[coords[0]][coords[1]].startswith(self.turn):
-                self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_color, activebackground = highlight_color)
+                moves = logic.rules.get_legal_moves(self.gameboard, self.turn, coords, self.last_move_positions)
+                if len(moves) > 0:
+                    self.phase = "choose_move"
+                    
+                    if (info["row"] % 2 == 0 and info["column"] % 2 == 0) or (info["row"] % 2 == 1 and info["column"] % 2 == 1):
+                        self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_light_color, activebackground = highlight_light_color)
+                    else:
+                        self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_dark_color, activebackground = highlight_dark_color)
+                        
+                    for move in moves:
+                        if self.turn == "w":
+                            button_coords = (7 - move[0], move[1])
+                        else:
+                            button_coords = (move[0], 7 - move[1])
+                            
+                        if (button_coords[0] % 2 == 0 and button_coords[1] % 2 == 0) or (button_coords[0] % 2 == 1 and button_coords[1] % 2 == 1):
+                            self.gameboard_buttons[button_coords[0]][button_coords[1]].config(bg = highlight_light_color, activebackground = highlight_light_color)
+                        else:
+                            self.gameboard_buttons[button_coords[0]][button_coords[1]].config(bg = highlight_dark_color, activebackground = highlight_dark_color)
+                            
+                    self.possible_moves = moves
+                    self.chosen_piece_position = coords
 
-        print(logic.rules.check_for_loss(self.gameboard, self.turn))
-        print(coords)
+        else:
+            if coords not in self.possible_moves:
+                self.phase = "pick_piece"
+                self.chosen_piece_position = (-1, -1)
+                self.possible_moves = []
+                self.render_board(self.turn)
+                
+            else:
+                piece = self.gameboard[self.chosen_piece_position[0]][self.chosen_piece_position[1]]
+                self.gameboard[self.chosen_piece_position[0]][self.chosen_piece_position[1]] = ""
+                self.gameboard[coords[0]][coords[1]] = piece
+
+                self.last_move_positions = (self.chosen_piece_position, coords)
+                self.phase = "pick_piece"
+                self.chosen_piece_position = (-1, -1)
+                self.possible_moves = []
+
+                if self.turn == "w":
+                    self.turn = "b"
+                else:
+                    self.turn = "w"
+
+                self.render_board(self.turn)
         
 
     def init_images(self):
