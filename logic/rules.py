@@ -176,3 +176,29 @@ def get_legal_moves(gameboard, turn, piece_position, last_move_positions):
             legal_moves.append(move)
 
     return legal_moves
+
+
+def check_for_game_over(gameboard, turn, last_move_positions):
+    game_over = True
+    winner = "n"
+    
+    pieces_positions = []
+    for i in range(8):
+        for j in range(8):
+            if gameboard[i][j].startswith(turn):
+                pieces_positions.append((i, j))
+
+    for piece_position in pieces_positions:
+        legal_moves = get_legal_moves(gameboard, turn, piece_position, last_move_positions)
+        if len(legal_moves) > 0:
+            game_over = False
+            break
+
+    if game_over:
+        if check_for_checks(gameboard, turn, last_move_positions):
+            if turn == "w":
+                winner = "b"
+            else:
+                winner = "w"
+
+    return game_over, winner

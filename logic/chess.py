@@ -97,10 +97,37 @@ class Game:
 
         else:
             if coords not in self.possible_moves:
-                self.phase = "pick_piece"
-                self.chosen_piece_position = (-1, -1)
-                self.possible_moves = []
-                self.render_board(self.turn)
+                if self.gameboard[coords[0]][coords[1]].startswith(self.turn) and coords != self.chosen_piece_position:
+                    self.render_board(self.turn)
+                    
+                    moves = logic.rules.get_legal_moves(self.gameboard, self.turn, coords, self.last_move_positions)
+                    if len(moves) > 0:
+                        self.phase = "choose_move"
+                    
+                        if (info["row"] % 2 == 0 and info["column"] % 2 == 0) or (info["row"] % 2 == 1 and info["column"] % 2 == 1):
+                            self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_light_color, activebackground = highlight_light_color)
+                        else:
+                            self.gameboard_buttons[info["row"]][info["column"]].config(bg = highlight_dark_color, activebackground = highlight_dark_color)
+                        
+                        for move in moves:
+                            if self.turn == "w":
+                                button_coords = (7 - move[0], move[1])
+                            else:
+                                button_coords = (move[0], 7 - move[1])
+                            
+                            if (button_coords[0] % 2 == 0 and button_coords[1] % 2 == 0) or (button_coords[0] % 2 == 1 and button_coords[1] % 2 == 1):
+                                self.gameboard_buttons[button_coords[0]][button_coords[1]].config(bg = highlight_light_color, activebackground = highlight_light_color)
+                            else:
+                                self.gameboard_buttons[button_coords[0]][button_coords[1]].config(bg = highlight_dark_color, activebackground = highlight_dark_color)
+                            
+                        self.possible_moves = moves
+                        self.chosen_piece_position = coords
+
+                else:
+                    self.phase = "pick_piece"
+                    self.chosen_piece_position = (-1, -1)
+                    self.possible_moves = []
+                    self.render_board(self.turn)
                 
             else:
                 piece = self.gameboard[self.chosen_piece_position[0]][self.chosen_piece_position[1]]
@@ -118,6 +145,10 @@ class Game:
                     self.turn = "w"
 
                 self.render_board(self.turn)
+
+                game_over, winner = logic.rules.check_for_game_over(self.gameboard, self.turn, self.last_move_positions)
+                if game_over:
+                    self.announce_game_over(winner)
         
 
     def init_images(self):
@@ -212,4 +243,28 @@ class Game:
                     self.gameboard_buttons[i][j].config(bg = light_color, activebackground = light_color)
                 else:
                     self.gameboard_buttons[i][j].config(bg = dark_color, activebackground = dark_color)
-                        
+
+
+    def announce_game_over(self, winner):
+        if winner == "w":
+            message = "White player wins!"
+        elif winner == "b":
+            message = "Black player wins!"
+        else:
+            message = "Stalemate!"
+
+        self.messagebox = tkinter.Tk()
+        self.messagebox.title("Chess")
+        self.messagebox.geometry("300x100")
+
+        self.message_label = tkinter.Label(self.messagebox, text = message, font = ('Cantarell', 18))
+        self.quit_btn = tkinter.Button(self.messagebox, text = "Quit", font = ('Cantarell', 18), command = self.quit)
+        
+        self.message_label.pack(pady = 10)
+        self.quit_btn.pack(fill = 'x')
+
+        self.messagebox.mainloop()
+
+    def quit(self):
+        self.root.destroy()
+        self.messagebox.destroy()
