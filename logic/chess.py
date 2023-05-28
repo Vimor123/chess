@@ -58,7 +58,9 @@ class Game:
 
         # Used only for en passant
         self.last_move_positions = ((-1, -1), (-1, -1))
-
+        
+        self.available_for_castling = {"w" : [(0, 0), (0, 7)], "b" : [(7, 0), (7, 7)]}
+        
         self.render_board(self.turn)
 
         self.root.mainloop()
@@ -78,6 +80,11 @@ class Game:
         if self.phase == "pick_piece":
             if self.gameboard[coords[0]][coords[1]].startswith(self.turn):
                 moves = logic.rules.get_legal_moves(self.gameboard, self.turn, coords, self.last_move_positions)
+                if self.gameboard[coords[0]][coords[1]].endswith("k"):
+                    castling_moves = logic.rules.get_castling_moves(self.gameboard, self.turn, self.available_for_castling[self.turn])
+                    for move in castling_moves:
+                        moves.append(move)
+                        
                 if len(moves) > 0:
                     self.phase = "choose_move"
                     
@@ -106,6 +113,11 @@ class Game:
                     self.render_board(self.turn)
                     
                     moves = logic.rules.get_legal_moves(self.gameboard, self.turn, coords, self.last_move_positions)
+                    if self.gameboard[coords[0]][coords[1]].endswith("k"):
+                        castling_moves = logic.rules.get_castling_moves(self.gameboard, self.turn, self.available_for_castling[self.turn])
+                        for move in castling_moves:
+                            moves.append(move)
+                            
                     if len(moves) > 0:
                         self.phase = "choose_move"
                     
@@ -166,6 +178,29 @@ class Game:
                     self.can_click = False
                     self.render_board(self.turn)
                     return
+
+                # Castling
+                if piece == "wk":
+                    self.available_for_castling["w"] = []
+                    if coords == (0, 2):
+                        self.gameboard[0][0] = ""
+                        self.gameboard[0][3] = "wr"
+                    elif coords == (0, 6):
+                        self.gameboard[0][7] = ""
+                        self.gameboard[0][5] = "wr"
+                
+                if piece == "bk":
+                    self.available_for_castling["b"] = []
+                    if coords == (7, 2):
+                        self.gameboard[7][0] = ""
+                        self.gameboard[7][3] = "br"
+                    elif coords == (7, 6):
+                        self.gameboard[7][7] = ""
+                        self.gameboard[7][5] = "br"
+
+                if piece.endswith("r"):
+                    if self.chosen_piece_position in self.available_for_castling[self.turn]:
+                        self.available_for_castling[self.turn].remove(self.chosen_piece_position)
 
                 self.last_move_positions = (self.chosen_piece_position, coords)
                 self.phase = "pick_piece"

@@ -134,7 +134,56 @@ def get_piece_moves(gameboard, piece_position, last_move_positions):
                 if (gameboard[new_position[0]][new_position[1]] == "" or
                     gameboard[new_position[0]][new_position[1]][0] != piece[0]):
                     moves.append(tuple(new_position))
+                    
+    return moves
 
+
+def get_castling_moves(gameboard, turn, available_rook_positions):
+    moves = []
+    if turn == "w":
+        castling_row = 0
+    else:
+        castling_row = 7
+
+    if not gameboard[castling_row][4].endswith("k"):
+        return moves
+
+    if (castling_row, 0) in available_rook_positions:
+        castling_legal = True
+        if gameboard[castling_row][1] != "":
+            castling_legal = False
+        for castling_column in range(2, 5):
+            if gameboard[castling_row][castling_column] != "" and not gameboard[castling_row][castling_column].endswith("k"):
+                castling_legal = False
+                break
+            new_gameboard = []
+            for gameboard_row in gameboard:
+                new_gameboard.append(gameboard_row.copy())
+            new_gameboard[castling_row][4] = ""
+            new_gameboard[castling_row][castling_column] = turn + "k"
+            if check_for_checks(new_gameboard, turn, ((0, 0), (0, 0))):
+                castling_legal = False
+                break
+        if castling_legal:
+            moves.append((castling_row, 2))
+
+    if (castling_row, 7) in available_rook_positions:
+        castling_legal = True
+        for castling_column in range(4, 7):
+            if gameboard[castling_row][castling_column] != "" and not gameboard[castling_row][castling_column].endswith("k"):
+                castling_legal = False
+                break
+            new_gameboard = []
+            for gameboard_row in gameboard:
+                new_gameboard.append(gameboard_row.copy())
+            new_gameboard[castling_row][4] = ""
+            new_gameboard[castling_row][castling_column] = turn + "k"
+            if check_for_checks(new_gameboard, turn, ((0, 0), (0, 0))):
+                castling_legal = False
+                break
+        if castling_legal:
+            moves.append((castling_row, 6))
+                
     return moves
 
 
