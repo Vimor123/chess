@@ -53,8 +53,8 @@ def get_piece_moves(gameboard, piece_position, last_move_positions):
             # En passant
             last_moved_piece = gameboard[last_move_positions[1][0]][last_move_positions[1][1]]
             if (last_moved_piece == "bp" and last_move_positions[0][0] == 6 and
-                last_move_positions[1][0] == 4 and i == 4
-                and abs(last_move_positions[1][1] - j) == 1):
+                last_move_positions[1][0] == 4 and i == 4 and
+                abs(last_move_positions[1][1] - j) == 1):
                 moves.append((i+1, last_move_positions[1][1]))
 
         else:
@@ -69,8 +69,8 @@ def get_piece_moves(gameboard, piece_position, last_move_positions):
             # En passant
             last_moved_piece = gameboard[last_move_positions[1][0]][last_move_positions[1][1]]
             if (last_moved_piece == "wp" and last_move_positions[0][0] == 1 and
-                last_move_positions[1][0] == 3 and i == 3
-                and abs(last_move_positions[1][1] - j) == 1):
+                last_move_positions[1][0] == 3 and i == 3 and
+                abs(last_move_positions[1][1] - j) == 1):
                 moves.append((i-1, last_move_positions[1][1]))
 
     elif piece.endswith("r"):
@@ -181,12 +181,41 @@ def get_legal_moves(gameboard, turn, piece_position, last_move_positions):
 def check_for_game_over(gameboard, turn, last_move_positions):
     game_over = True
     winner = "n"
-    
+
+    pieces = { "w" : [], "b" : []}
+
     pieces_positions = []
     for i in range(8):
         for j in range(8):
             if gameboard[i][j].startswith(turn):
                 pieces_positions.append((i, j))
+                pieces[turn].append(gameboard[i][j])
+            elif gameboard[i][j] != "":
+                if turn == "w":
+                    pieces["b"].append(gameboard[i][j])
+                else:
+                    pieces["w"].append(gameboard[i][j])
+
+    pieces["w"].sort()
+    pieces["b"].sort()
+
+    w_insufficient_material = False
+    b_insufficient_material = False
+    if pieces["w"] == ["wk"] or pieces["w"] == ["wb", "wk"] or pieces["w"] == ["wk", "wn"]:
+        w_insufficient_material = True
+    if pieces["b"] == ["bk"] or pieces["b"] == ["bb", "bk"] or pieces["b"] == ["bk", "bn"]:
+        b_insufficient_material = True
+
+    # Insufficient material
+    if w_insufficient_material and b_insufficient_material:
+        winner = "i"
+        return game_over, winner
+
+    # Insufficient material
+    if (pieces["w"] == ["wk", "wn", "wn"] and pieces["b"] == ["bk"] or
+        pieces["b"] == ["bk", "bn", "bn"] and pieces["w"] == ["wk"]):
+        winner = "i"
+        return game_over, winner
 
     for piece_position in pieces_positions:
         legal_moves = get_legal_moves(gameboard, turn, piece_position, last_move_positions)
@@ -196,9 +225,11 @@ def check_for_game_over(gameboard, turn, last_move_positions):
 
     if game_over:
         if check_for_checks(gameboard, turn, last_move_positions):
+            # Checkmate
             if turn == "w":
                 winner = "b"
             else:
                 winner = "w"
+        # else: Stalemate
 
     return game_over, winner

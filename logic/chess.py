@@ -51,6 +51,8 @@ class Game:
 
         self.turn = "w"
         self.phase = "pick_piece"
+        self.game_over = False
+        
         self.chosen_piece_position = (-1, -1)
         self.possible_moves = []
 
@@ -63,6 +65,9 @@ class Game:
         
 
     def click_tile(self, event):
+        if self.game_over:
+            return
+        
         info = event.widget.grid_info()
         coords = (-1, -1)
         if self.turn == "w":
@@ -134,6 +139,20 @@ class Game:
                 self.gameboard[self.chosen_piece_position[0]][self.chosen_piece_position[1]] = ""
                 self.gameboard[coords[0]][coords[1]] = piece
 
+                # En passant
+                last_moved_piece = self.gameboard[self.last_move_positions[1][0]][self.last_move_positions[1][1]]
+                if (last_moved_piece.endswith("bp") and self.last_move_positions[0][0] == 6 and
+                    self.last_move_positions[1][0] == 4 and self.chosen_piece_position[0] == 4 and
+                    abs(self.last_move_positions[1][1] - self.chosen_piece_position[1]) == 1 and
+                    coords[0] == 5 and coords[1] == self.last_move_positions[1][1]):
+                    self.gameboard[self.last_move_positions[1][0]][self.last_move_positions[1][1]] = ""
+                
+                if (last_moved_piece.endswith("wp") and self.last_move_positions[0][0] == 1 and
+                    self.last_move_positions[1][0] == 3 and self.chosen_piece_position[0] == 3 and
+                    abs(self.last_move_positions[1][1] - self.chosen_piece_position[1]) == 1 and
+                    coords[0] == 2 and coords[1] == self.last_move_positions[1][1]):
+                    self.gameboard[self.last_move_positions[1][0]][self.last_move_positions[1][1]] = ""
+
                 self.last_move_positions = (self.chosen_piece_position, coords)
                 self.phase = "pick_piece"
                 self.chosen_piece_position = (-1, -1)
@@ -148,6 +167,7 @@ class Game:
 
                 game_over, winner = logic.rules.check_for_game_over(self.gameboard, self.turn, self.last_move_positions)
                 if game_over:
+                    self.game_over = True
                     self.announce_game_over(winner)
         
 
