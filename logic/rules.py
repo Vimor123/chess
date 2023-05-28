@@ -41,7 +41,7 @@ def get_piece_moves(gameboard, piece_position, last_move_positions):
         pass
     
     elif piece.endswith("p"):
-        if piece == "wp":
+        if piece == "wp" and i <= 7:
             if gameboard[i+1][j] == "":
                 moves.append((i+1, j))
                 if i == 1 and gameboard[i+2][j] == "":
@@ -57,7 +57,7 @@ def get_piece_moves(gameboard, piece_position, last_move_positions):
                 abs(last_move_positions[1][1] - j) == 1):
                 moves.append((i+1, last_move_positions[1][1]))
 
-        else:
+        elif piece == "bp" and i >= 0:
             if gameboard[i-1][j] == "":
                 moves.append((i-1, j))
                 if i == 6 and gameboard[i-2][j] == "":

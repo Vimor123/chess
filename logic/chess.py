@@ -51,7 +51,7 @@ class Game:
 
         self.turn = "w"
         self.phase = "pick_piece"
-        self.game_over = False
+        self.can_click = True
         
         self.chosen_piece_position = (-1, -1)
         self.possible_moves = []
@@ -65,7 +65,7 @@ class Game:
         
 
     def click_tile(self, event):
-        if self.game_over:
+        if not self.can_click:
             return
         
         info = event.widget.grid_info()
@@ -139,19 +139,33 @@ class Game:
                 self.gameboard[self.chosen_piece_position[0]][self.chosen_piece_position[1]] = ""
                 self.gameboard[coords[0]][coords[1]] = piece
 
-                # En passant
                 last_moved_piece = self.gameboard[self.last_move_positions[1][0]][self.last_move_positions[1][1]]
-                if (last_moved_piece.endswith("bp") and self.last_move_positions[0][0] == 6 and
+
+                # En passant
+                if (last_moved_piece == "bp" and self.last_move_positions[0][0] == 6 and
                     self.last_move_positions[1][0] == 4 and self.chosen_piece_position[0] == 4 and
                     abs(self.last_move_positions[1][1] - self.chosen_piece_position[1]) == 1 and
                     coords[0] == 5 and coords[1] == self.last_move_positions[1][1]):
                     self.gameboard[self.last_move_positions[1][0]][self.last_move_positions[1][1]] = ""
                 
-                if (last_moved_piece.endswith("wp") and self.last_move_positions[0][0] == 1 and
+                if (last_moved_piece == "wp" and self.last_move_positions[0][0] == 1 and
                     self.last_move_positions[1][0] == 3 and self.chosen_piece_position[0] == 3 and
                     abs(self.last_move_positions[1][1] - self.chosen_piece_position[1]) == 1 and
                     coords[0] == 2 and coords[1] == self.last_move_positions[1][1]):
                     self.gameboard[self.last_move_positions[1][0]][self.last_move_positions[1][1]] = ""
+
+                # Pawn promotion
+                if piece == "wp" and coords[0] == 7:
+                    self.pawn_promotion_screen(coords)
+                    self.can_click = False
+                    self.render_board(self.turn)
+                    return
+
+                if piece == "bp" and coords[0] == 0:
+                    self.pawn_promotion_screen(coords)
+                    self.can_click = False
+                    self.render_board(self.turn)
+                    return
 
                 self.last_move_positions = (self.chosen_piece_position, coords)
                 self.phase = "pick_piece"
@@ -167,7 +181,7 @@ class Game:
 
                 game_over, winner = logic.rules.check_for_game_over(self.gameboard, self.turn, self.last_move_positions)
                 if game_over:
-                    self.game_over = True
+                    self.can_click = False
                     self.announce_game_over(winner)
         
 
@@ -263,6 +277,85 @@ class Game:
                     self.gameboard_buttons[i][j].config(bg = light_color, activebackground = light_color)
                 else:
                     self.gameboard_buttons[i][j].config(bg = dark_color, activebackground = dark_color)
+
+
+    def pawn_promotion_screen(self, coords):
+        self.promotionbox = tkinter.Tk()
+        self.promotionbox.title("Chess")
+        size_string = str((tile_size + 6) * 4) + "x" + str((tile_size + 6))
+        self.promotionbox.geometry(size_string)
+
+        if self.turn == "w":
+            knight_image = Image.open("./images/pieces/wn.png")
+            knight_image = knight_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.knight_image = ImageTk.PhotoImage(knight_image, master = self.promotionbox)
+
+            bishop_image = Image.open("./images/pieces/wb.png")
+            bishop_image = bishop_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.bishop_image = ImageTk.PhotoImage(bishop_image, master = self.promotionbox)
+
+            rook_image = Image.open("./images/pieces/wr.png")
+            rook_image = rook_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.rook_image = ImageTk.PhotoImage(rook_image, master = self.promotionbox)
+
+            queen_image = Image.open("./images/pieces/wq.png")
+            queen_image = queen_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.queen_image = ImageTk.PhotoImage(queen_image, master = self.promotionbox)
+
+        elif self.turn == "b":
+            knight_image = Image.open("./images/pieces/bn.png")
+            knight_image = knight_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.knight_image = ImageTk.PhotoImage(knight_image, master = self.promotionbox)
+
+            bishop_image = Image.open("./images/pieces/bb.png")
+            bishop_image = bishop_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.bishop_image = ImageTk.PhotoImage(bishop_image, master = self.promotionbox)
+
+            rook_image = Image.open("./images/pieces/br.png")
+            rook_image = rook_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.rook_image = ImageTk.PhotoImage(rook_image, master = self.promotionbox)
+
+            queen_image = Image.open("./images/pieces/bq.png")
+            queen_image = queen_image.resize((tile_size, tile_size), Image.Resampling.LANCZOS)
+            self.queen_image = ImageTk.PhotoImage(queen_image, master = self.promotionbox)
+
+        self.knight_button = tkinter.Button(self.promotionbox, image = self.knight_image, command = lambda: self.choose_promotion_piece("n", coords))
+        self.bishop_button = tkinter.Button(self.promotionbox, image = self.bishop_image, command = lambda: self.choose_promotion_piece("b", coords))
+        self.rook_button = tkinter.Button(self.promotionbox, image = self.rook_image, command = lambda: self.choose_promotion_piece("r", coords))
+        self.queen_button = tkinter.Button(self.promotionbox, image = self.queen_image, command = lambda: self.choose_promotion_piece("q", coords))
+
+        self.knight_button.grid(row = 0, column = 0)
+        self.bishop_button.grid(row = 0, column = 1)
+        self.rook_button.grid(row = 0, column = 2)
+        self.queen_button.grid(row = 0, column = 3)
+
+
+    def choose_promotion_piece(self, promoted_piece, coords):
+        self.promotionbox.destroy()
+        
+        if self.turn == "w":
+            self.gameboard[coords[0]][coords[1]] = "w" + promoted_piece
+        else:
+            self.gameboard[coords[0]][coords[1]] = "b" + promoted_piece
+
+        self.last_move_positions = (self.chosen_piece_position, coords)
+        self.phase = "pick_piece"
+        self.chosen_piece_position = (-1, -1)
+        self.possible_moves = []
+
+        if self.turn == "w":
+            self.turn = "b"
+        else:
+            self.turn = "w"
+
+        self.render_board(self.turn)
+
+        self.can_click = True
+
+        game_over, winner = logic.rules.check_for_game_over(self.gameboard, self.turn, self.last_move_positions)
+        if game_over:
+            self.can_click = False
+            self.announce_game_over(winner)
 
 
     def announce_game_over(self, winner):
